@@ -10,10 +10,31 @@ SECRET_KEY = 'django-insecure-06h@+2%7s_ly7)5xj)lg_*y-lr())ch0poiy%m7*l%-&+i!e7w
 
 # DEBUG = True
 # ALLOWED_HOSTS = []
-####chnge
+###chnge
 DEBUG = False
 ALLOWED_HOSTS = ['*']  # or ['your-app-name.onrender.com']
-####
+###
+
+
+
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.environ.get('postgresql://postgres:Zenha@123@db.lilpcutzfatqomaoxhuj.supabase.co:5432/postgres'),
+        conn_max_age=600,
+        ssl_require=True
+    )
+}
+
+
+if not DATABASES['default']:
+    print("WARNING: DATABASE_URL not found!")
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
+    }
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -89,11 +110,6 @@ WSGI_APPLICATION = 'invoice_project.wsgi.application'
 # }
 
 
-#####chnages####
-DATABASES = {
-    'default': dj_database_url.config(conn_max_age=600)
-}
-###
 
 AUTH_PASSWORD_VALIDATORS = [
     {
