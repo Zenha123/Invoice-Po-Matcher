@@ -1,12 +1,20 @@
 import os
+####
+import dj_database_url
 from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv()   # loads .env
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-06h@+2%7s_ly7)5xj)lg_*y-lr())ch0poiy%m7*l%-&+i!e7w'
-DEBUG = True
-ALLOWED_HOSTS = []
+
+# DEBUG = True
+# ALLOWED_HOSTS = []
+####chnge
+DEBUG = False
+ALLOWED_HOSTS = ['*']  # or ['your-app-name.onrender.com']
+####
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -40,9 +48,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:5174",  # Vite dev server
-# ]
+
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",  # your React dev server
 ]
@@ -75,12 +81,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'invoice_project.wsgi.application'
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+
+#####chnages####
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(conn_max_age=600)
 }
+###
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -108,3 +121,11 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
