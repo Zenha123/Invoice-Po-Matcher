@@ -39,7 +39,7 @@ COPY . /app/
 RUN mkdir -p /app/media /app/staticfiles
 
 # Collect static files (with fallback if it fails)
-RUN python manage.py collectstatic --noinput --clear  true
+RUN python manage.py collectstatic --noinput --clear
 
 # Expose port 8000
 EXPOSE 8000
