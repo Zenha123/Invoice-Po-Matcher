@@ -3,16 +3,5 @@ services:
     name: invoice-backend
     env: python
     plan: free
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
+    buildCommand: apt-get update && apt-get install -y tesseract-ocr libtesseract-dev && pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
     startCommand: gunicorn invoice_project.wsgi
-    envVars:
-      - key: SECRET_KEY
-        value: django-insecure-06h@+2%7s_ly7)5xj)lg_*y-lr())ch0poiy%m7*l%-&+i!e7w
-      - key: DEBUG
-        value: 'False'
-      - key: ALLOWED_HOSTS
-        value: '*'
-      - key: DATABASE_URL
-        value: postgresql://postgres:Zenha@123@db.lilpcutzfatqomaoxhuj.supabase.co:5432/postgres
-      - key: DJANGO_SETTINGS_MODULE
-        value: invoice_project.settings
