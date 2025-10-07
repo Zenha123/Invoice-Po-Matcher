@@ -1,0 +1,158 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+  color:black;
+}
+
+/* Body Background */
+body {
+  background: #f5f7fa; /* light gray */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+}
+
+/* Container */
+.container {
+  max-width: 1000px;
+  width: 100%;
+  padding: 1rem;
+}
+
+/* Header */
+h1, h2, h3 {
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+/* Gradient Buttons */
+.btn {
+  background: linear-gradient(135deg, #6cc1ff, #c2f0fc);
+  color: #333;
+  border: none;
+  padding: 0.7rem 1.2rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+/* Card Styles */
+.card {
+  background: #ffffff;
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.6s forwards;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Upload Input */
+.upload-input {
+  display: block;
+  margin-top: 0.7rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.upload-input:focus {
+  border-color: #6cc1ff;
+  outline: none;
+}
+
+/* Status Labels */
+.status-match {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.status-mismatch {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.status-pending {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+/* Welcome Page */
+.welcome-card {
+  background: #ffffff;
+  border-radius: 15px;
+  padding: 2rem;
+  text-align: center;
+  margin-top: 5rem;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  animation: fadeIn 1s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Progress Bar */
+.progress-container {
+  background: #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 0.5rem 0 1rem 0;
+  height: 12px;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(135deg, #6cc1ff, #c2f0fc);
+  width: 0;
+  transition: width 0.5s ease;
+}
+
+/* Summary Dashboard */
+.summary-dashboard {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.summary-card {
+  flex: 1;
+  background: #ffffff;
+  padding: 1rem;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.summary-card h3 {
+  font-size: 1.2rem;
+  margin-bottom: 0.3rem;
+}
+
+.summary-card p {
+  font-size: 1rem;
+  color: #0a0909;
+}
