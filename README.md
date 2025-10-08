@@ -153,49 +153,49 @@ The **Invoice-PO Matcher** streamlines the verification process between **Purcha
 ## 🏃 How to Run Locally
 🐍 Backend (Django Setup)
 
-1. Clone the repository:  
+1. #Clone the repository:  
 - git clone https://github.com/Zenha123/invoice-po-matcher.git
 - cd invoice-po-matcher
 
-2. Create and activate a virtual environment:
+2. #Create and activate a virtual environment:
 - python -m venv venv 
 - venv\Scripts\activate
     
-3. Install dependencies:
+3. #Install dependencies:
 - pip install -r requirements.txt
    
-4. Set up environment variables:
+4. #Set up environment variables:
 - SECRET_KEY=your_django_secret_key
 - DEBUG=True
 - SUPABASE_URL=your_supabase_url
 - SUPABASE_KEY=your_supabase_key
 - MISTRAL_API_KEY=your_mistral_api_key
    
-5. Apply database migrations:
+5. #Apply database migrations:
 - python manage.py makemigrations
 - python manage.py migrate
 
-6. Create a superuser (for admin access):
+6. #Create a superuser (for admin access):
 - python manage.py createsuperuser
 
-7. Collect static files (if required):
+7. #Collect static files (if required):
 - python manage.py collectstatic --noinput
 
-8. Run the development server:
+8. #Run the development server:
 - python manage.py runserver
 
-⚛️ Frontend (React Setup)
+⚛️ #Frontend (React Setup)
 
-1. Navigate to the frontend directory: 
+1. #Navigate to the frontend directory: 
 - cd invoice-frontend
 
-2. Set up environment variables:
+2. #Set up environment variables:
 - VITE_API_BASE_URL=http://127.0.0.1:8000/api
   
-3. Run the React app:
+3. #Run the React app:
 - npm run dev
   
-## The backend and frontend will automatically be available at:
+# The backend and frontend will automatically be available at:
 
 - Backend → http://localhost:8000
 - Frontend → http://localhost:5173
