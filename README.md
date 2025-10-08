@@ -7,8 +7,7 @@ A web application for extracting, verifying, and reconciling POs and invoices ef
 
 ## 🚀 Project Overview
 
-
-The **Invoice-PO Matcher** is designed to streamline the verification process between  **Purchase Orders (POs)** and **Invoices**. Users can upload multiple invoices per PO, and the system intelligently matches and highlights discrepancies. Data extraction is automated using OCR and structured with Mistral AI for accurate insights. 
+The **Invoice-PO Matcher** streamlines the verification process between **Purchase Orders (POs)** and **Invoices**. Users can upload multiple invoices per PO, and the system intelligently matches and highlights discrepancies. Data extraction is automated using **Tesseract OCR** and structured with **Mistral AI** for accurate insights.  
 
 **Key Features:**
 
@@ -19,7 +18,7 @@ The **Invoice-PO Matcher** is designed to streamline the verification process be
 - ✅ Visual dashboard to review matched, unmatched, and pending items  
 - 🗂️ Detailed item-level comparison in tables  
 - 🖥️ Built with **Django (backend)**, **React (frontend)**, **Docker**, and **Supabase**  
-- 🌐 Hosted backend on **Render Web Service**, frontend on **Render Static Site**, DB on **Supabase**
+- 🌐 Hosted backend on **[Render Web Service](https://invoice-po-matcher.onrender.com)**, frontend on **[Render Static Site](https://invoice-po-frontend.onrender.com)**, DB on **Supabase**
 
 ---
 
@@ -140,8 +139,8 @@ The **Invoice-PO Matcher** is designed to streamline the verification process be
 
 ## 🌐 Hosting Details
 
-- **Backend:** Render Web Service  
-- **Frontend:** Render Static Site  
+- **Backend:** [Render Web Service](https://invoice-po-matcher.onrender.com)  
+- **Frontend:** [Render Static Site](https://invoice-po-frontend.onrender.com)  
 - **Database:** Supabase (PostgreSQL)  
 
 **Admin Panel:**  
@@ -149,9 +148,15 @@ The **Invoice-PO Matcher** is designed to streamline the verification process be
 - Username: `admin`  
 - Password: `admin`  
 
-**Docker Deployment:**
-
 ---
+
+## 🏃 How to Run Locally
+
+1. Clone the repository:  
+
+git clone https://github.com/Zenha123/invoice-po-matcher.git
+cd invoice-po-matcher
+
 
 ## ⚡ Tech Highlights
 
@@ -162,13 +167,11 @@ The **Invoice-PO Matcher** is designed to streamline the verification process be
 
 ---
 
-## 📞 Contact / Support
-
-For issues or collaboration:  
+## 📞 ContactInfo 
 
 - **Author:** Zenha Fathima  
 - **Email:** fathimazenha21@gmail.com  
-- **LinkedIn:** [https://www.linkedin.com/in/zenha-fathima-b37101270/]([https://www.linkedin.com/in/zenha](https://www.linkedin.com/in/zenha-fathima-b37101270/))  
+- **LinkedIn:** [https://www.linkedin.com/in/zenha-fathima-b37101270/](https://www.linkedin.com/in/zenha-fathima-b37101270/)  
 
 ⭐ Enjoy automated PO & Invoice Matching with AI-powered insights!
 
