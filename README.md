@@ -192,22 +192,22 @@ python manage.py collectstatic --noinput
 
 # 8️⃣ Run development server
 python manage.py runserver
-
-⚛️ Frontend (React Setup)
-
+```
+### ⚛️  **Frontend (React Setup)**
+```
 # 1️⃣ Navigate to the frontend directory: 
 - cd invoice-frontend
 
 # 2️⃣ Set up environment variables:
-- VITE_API_BASE_URL=http://127.0.0.1:8000/api
+- VITE_API_BASE_URL=[http://127.0.0.1:8000/api](http://127.0.0.1:8000/api)
   
 # 3️⃣Run the React app:
 - npm run dev
-  
-# The backend and frontend will locally  available at:
+```
+## The backend and frontend will locally  available at:
 
-- Backend → http://localhost:8000
-- Frontend → http://localhost:5173
+- Backend →  [http://localhost:8000 ](http://localhost:8000 )
+- Frontend → [http://localhost:5173](http://localhost:5173)
 
 🐳 Run with Docker (Optional)
 - docker-compose up --build
