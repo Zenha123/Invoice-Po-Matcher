@@ -15,7 +15,7 @@ from drf_yasg.utils import swagger_auto_schema
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
-from ..models import PurchaseOrderRef, InvoiceRef, VerificationRun, VerificationStatus
+from ..models import PurchaseOrder, Invoice, VerificationRun, VerificationStatus
 from ..serializers.uploadserializers import (
     POUploadSerializer, 
     InvoiceUploadSerializer,
@@ -68,7 +68,7 @@ class PurchaseOrderUploadView(APIView):
                 issued_date = None
 
         try:
-            po_obj = PurchaseOrderRef.objects.create(
+            po_obj = PurchaseOrder.objects.create(
                 purchase_order_id=parsed.get("id") or (filename_override or f.name),
                 currency=parsed.get("currency") or None,
                 subtotal=parsed.get("subtotal"),
@@ -299,12 +299,12 @@ class InvoiceUploadAndVerifyView(APIView):
         # Create InvoiceRef (purchase_order left null for now)
         invoice_identifier = parsed.get("id") or (filename_override or f.name)
         try:
-            default_source = InvoiceRef._meta.get_field("source_type").default
+            default_source = Invoice._meta.get_field("source_type").default
         except Exception:
             default_source = "upload"
 
         try:
-            invoice_obj = InvoiceRef.objects.create(
+            invoice_obj = Invoice.objects.create(
                 invoice_id=invoice_identifier,
                 issue_date=issue_date,
                 currency=parsed.get("currency") or None,
@@ -325,13 +325,13 @@ class InvoiceUploadAndVerifyView(APIView):
         matched_po = None
         try:
             if explicit_po_id:
-                matched_po = PurchaseOrderRef.objects.filter(id=explicit_po_id).first()
+                matched_po = PurchaseOrder.objects.filter(id=explicit_po_id).first()
         except Exception:
             matched_po = None
 
         if not matched_po and parsed.get("po_number"):
             try:
-                matched_po = PurchaseOrderRef.objects.filter(purchase_order_id__iexact=parsed.get("po_number")).first()
+                matched_po = PurchaseOrder.objects.filter(purchase_order_id__iexact=parsed.get("po_number")).first()
             except Exception:
                 matched_po = None
 
@@ -340,7 +340,7 @@ class InvoiceUploadAndVerifyView(APIView):
             total_val = total_dec
             if vendor and total_val is not None:
                 try:
-                    matched_po = PurchaseOrderRef.objects.filter(
+                    matched_po = PurchaseOrder.objects.filter(
                         supplier_name__icontains=vendor[:50],
                         total=total_val
                     ).order_by("-created_at").first()
@@ -351,7 +351,7 @@ class InvoiceUploadAndVerifyView(APIView):
             inv_id = parsed.get("id")
             if inv_id:
                 try:
-                    matched_po = PurchaseOrderRef.objects.filter(purchase_order_id__iexact=inv_id).first()
+                    matched_po = PurchaseOrder.objects.filter(purchase_order_id__iexact=inv_id).first()
                 except Exception:
                     matched_po = None
 

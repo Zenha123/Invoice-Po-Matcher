@@ -9,10 +9,10 @@ from django.utils.safestring import mark_safe
 from django.utils.timezone import localtime
 
 from .models import (
-    PurchaseOrderRef,
-    InvoiceRef,
+    PurchaseOrder,
+    Invoice,
     VerificationRun,
-    VerificationItemResult,
+    ItemVerification,
     Discrepancy,
     VerificationStatus,
 )
@@ -21,7 +21,7 @@ from .models import (
 # Inline admin for item results and discrepancies
 # -------------------------
 class VerificationItemResultInline(admin.TabularInline):
-    model = VerificationItemResult
+    model = ItemVerification
     extra = 0
     fields = (
         "item_id",
@@ -72,7 +72,7 @@ def pretty_json_html(value):
 # -------------------------
 # Admin for PurchaseOrderRef
 # -------------------------
-@admin.register(PurchaseOrderRef)
+@admin.register(PurchaseOrder)
 class PurchaseOrderRefAdmin(admin.ModelAdmin):
     list_display = ("purchase_order_id", "buyer_name", "supplier_name", "issued_date", "total", "created_at")
     search_fields = ("purchase_order_id", "buyer_name", "supplier_name")
@@ -95,7 +95,7 @@ class PurchaseOrderRefAdmin(admin.ModelAdmin):
 # -------------------------
 # Admin for InvoiceRef
 # -------------------------
-@admin.register(InvoiceRef)
+@admin.register(Invoice)
 class InvoiceRefAdmin(admin.ModelAdmin):
     list_display = ("invoice_id", "purchase_order_link", "supplier_name", "issue_date", "total", "source_type", "created_at")
     search_fields = ("invoice_id", "supplier_name", "source_ref", "receiver_email")
@@ -273,7 +273,7 @@ class VerificationRunAdmin(admin.ModelAdmin):
 # -------------------------
 # Admin for VerificationItemResult
 # -------------------------
-@admin.register(VerificationItemResult)
+@admin.register(ItemVerification)
 class VerificationItemResultAdmin(admin.ModelAdmin):
     list_display = ("item_id", "run_link", "description_short", "po_quantity", "invoice_quantity", "po_unit_price", "invoice_unit_price", "is_match")
     search_fields = ("item_id", "description", "inv_original_name", "run__invoice__invoice_id")

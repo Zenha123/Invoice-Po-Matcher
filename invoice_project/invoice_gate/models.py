@@ -22,7 +22,7 @@ class TimeStampedUUIDModel(models.Model):
 
 
 # ---------- Purchase Order ----------
-class PurchaseOrderRef(TimeStampedUUIDModel):
+class PurchaseOrder(TimeStampedUUIDModel):
     purchase_order_id = models.CharField(max_length=100, db_index=True, unique=True)
     currency = models.CharField(max_length=10, blank=True, null=True)
     subtotal = models.DecimalField(max_digits=14, decimal_places=2, blank=True, null=True)
@@ -52,10 +52,10 @@ class InvoiceSource:
     ]
 
 
-class InvoiceRef(TimeStampedUUIDModel):
+class Invoice(TimeStampedUUIDModel):
     invoice_id = models.CharField(max_length=100, db_index=True)
     purchase_order = models.ForeignKey(
-        PurchaseOrderRef,
+        PurchaseOrder,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -112,13 +112,13 @@ class VerificationRun(TimeStampedUUIDModel):
     One verification attempt comparing a single Invoice against a PO.
     """
     purchase_order = models.ForeignKey(
-        PurchaseOrderRef,
+        PurchaseOrder,
         on_delete=models.SET_NULL,
         null=True,
         related_name="verification_runs"
     )
     invoice = models.ForeignKey(
-        InvoiceRef,
+        Invoice,
         on_delete=models.CASCADE,
         related_name="verification_runs"
     )
@@ -191,7 +191,7 @@ class DiscrepancyType:
     ]
 
 
-class VerificationItemResult(TimeStampedUUIDModel):
+class ItemVerification(TimeStampedUUIDModel):
     """
     Item-wise comparison across PO and Invoice.
     """
@@ -231,7 +231,7 @@ class Discrepancy(TimeStampedUUIDModel):
     type = models.CharField(max_length=30, choices=DiscrepancyType.CHOICES)
 
     # Optional link to a specific item result
-    item_result = models.ForeignKey(VerificationItemResult, on_delete=models.CASCADE, null=True, blank=True, related_name="discrepancies")
+    item_result = models.ForeignKey(ItemVerification, on_delete=models.CASCADE, null=True, blank=True, related_name="discrepancies")
 
     field = models.CharField(max_length=50, blank=True, null=True)
     expected = models.CharField(max_length=100, blank=True, null=True)

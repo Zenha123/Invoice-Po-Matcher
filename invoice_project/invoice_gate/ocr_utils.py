@@ -583,3 +583,17 @@ def extract_structured_fields(text: str, doc_type_hint: str = None) -> dict:
     # Fallback to regex extraction
     log("Using regex fallback extraction")
     return extract_with_regex(text, doc_type)
+
+
+
+
+
+
+
+
+
+
+
+
+
+

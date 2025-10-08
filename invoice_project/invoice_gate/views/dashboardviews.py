@@ -4,10 +4,10 @@ from rest_framework.response import Response
 from django.db.models import Count
 
 from ..models import (
-    PurchaseOrderRef, 
-    InvoiceRef,
+    PurchaseOrder, 
+    Invoice,
     VerificationRun,
-    VerificationItemResult,
+    ItemVerification,
     Discrepancy
 )
 
@@ -56,19 +56,19 @@ class UploadPageDataView(APIView):
             invoice_limit = min(max(invoice_limit, 1), 100)
             
             # Fetch purchase orders with invoice count annotation
-            purchase_orders = PurchaseOrderRef.objects.annotate(
+            purchase_orders = PurchaseOrder.objects.annotate(
                 invoice_count=Count('invoices')
             ).order_by('-created_at')[:po_limit]
             
             # Fetch invoices
-            invoices = InvoiceRef.objects.select_related(
+            invoices = Invoice.objects.select_related(
                 'purchase_order'
             ).order_by('-created_at')[:invoice_limit]
             
             # Calculate summary statistics
-            total_pos = PurchaseOrderRef.objects.count()
-            total_invoices = InvoiceRef.objects.count()
-            pos_with_invoices = PurchaseOrderRef.objects.annotate(
+            total_pos = PurchaseOrder.objects.count()
+            total_invoices = Invoice.objects.count()
+            pos_with_invoices = PurchaseOrder.objects.annotate(
                 invoice_count=Count('invoices')
             ).filter(invoice_count__gt=0).count()
             
@@ -118,7 +118,7 @@ class PurchaseOrderListView(generics.ListAPIView):
     serializer_class = PurchaseOrderListSerializer
     
     def get_queryset(self):
-        queryset = PurchaseOrderRef.objects.annotate(
+        queryset = PurchaseOrder.objects.annotate(
             invoice_count=Count('invoices')
         ).order_by('-created_at')
         
@@ -138,7 +138,7 @@ class PurchaseOrderListView(generics.ListAPIView):
         serializer = self.get_serializer(queryset, many=True)
         
         return Response({
-            'count': PurchaseOrderRef.objects.count(),
+            'count': PurchaseOrder.objects.count(),
             'results': serializer.data
         })
 
@@ -150,7 +150,7 @@ class PurchaseOrderDetailView(generics.RetrieveAPIView):
     URL: /api/purchase-orders/{id}/
     """
     serializer_class = PurchaseOrderDetailSerializer
-    queryset = PurchaseOrderRef.objects.prefetch_related('invoices')
+    queryset = PurchaseOrder.objects.prefetch_related('invoices')
     lookup_field = 'id'
 
 
@@ -172,7 +172,7 @@ class InvoiceListView(generics.ListAPIView):
     serializer_class = InvoiceListSerializer
     
     def get_queryset(self):
-        queryset = InvoiceRef.objects.select_related(
+        queryset = Invoice.objects.select_related(
             'purchase_order'
         ).order_by('-created_at')
         
@@ -212,7 +212,7 @@ class InvoiceDetailView(generics.RetrieveAPIView):
     URL: /api/invoices/{id}/
     """
     serializer_class = InvoiceListSerializer
-    queryset = InvoiceRef.objects.select_related('purchase_order')
+    queryset = Invoice.objects.select_related('purchase_order')
     lookup_field = 'id'
 
 
@@ -226,7 +226,7 @@ class PurchaseOrderInvoicesView(generics.ListAPIView):
     
     def get_queryset(self):
         po_id = self.kwargs.get('po_id')
-        return InvoiceRef.objects.filter(
+        return Invoice.objects.filter(
             purchase_order__id=po_id
         ).select_related('purchase_order').order_by('-created_at')
     
@@ -288,7 +288,7 @@ class ReviewPageDataView(APIView):
                     })
                     
                     # Get all invoices for this PO
-                    invoices = InvoiceRef.objects.filter(
+                    invoices = Invoice.objects.filter(
                         purchase_order=po
                     ).order_by('-created_at')
                     
@@ -410,7 +410,7 @@ class VerificationItemResultsView(generics.ListAPIView):
     
     def get_queryset(self):
         run_id = self.kwargs.get('run_id')
-        return VerificationItemResult.objects.filter(
+        return ItemVerification.objects.filter(
             run__id=run_id
         ).order_by('item_id')
 

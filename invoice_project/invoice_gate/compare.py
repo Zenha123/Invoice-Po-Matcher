@@ -9,7 +9,7 @@ from django.utils import timezone
 
 # import models
 from .models import (
-    VerificationRun, VerificationItemResult,
+    VerificationRun, ItemVerification,
     Discrepancy, VerificationStatus, DiscrepancyLevel, DiscrepancyType
 )
 
@@ -241,7 +241,7 @@ def persist_verification(invoice_obj, matched_po, status_str, summary, reasons, 
             inv_price = to_decimal_safe(item.get("inv_unit_price"))
             po_price = to_decimal_safe(item.get("po_unit_price"))
 
-            item_result = VerificationItemResult.objects.create(
+            item_result = ItemVerification.objects.create(
                 run=run,
                 item_id=str(uuid.uuid4())[:36],
                 description=str(desc)[:500],

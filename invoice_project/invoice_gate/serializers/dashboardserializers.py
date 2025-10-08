@@ -1,9 +1,9 @@
 from rest_framework import serializers
 from django.utils.timesince import timesince
 from ..models import (
-    PurchaseOrderRef, 
-    InvoiceRef,
-    VerificationItemResult,
+    PurchaseOrder, 
+    Invoice,
+    ItemVerification,
     Discrepancy,
     VerificationRun,
 )
@@ -15,7 +15,7 @@ class InvoiceListSerializer(serializers.ModelSerializer):
     upload_date = serializers.SerializerMethodField()
     
     class Meta:
-        model = InvoiceRef
+        model = Invoice
         fields = [
             'id',
             'invoice_id',
@@ -50,7 +50,7 @@ class PurchaseOrderListSerializer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField()
     
     class Meta:
-        model = PurchaseOrderRef
+        model = PurchaseOrder
         fields = [
             'id',
             'purchase_order_id',
@@ -107,7 +107,7 @@ class PurchaseOrderDetailSerializer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField()
     
     class Meta:
-        model = PurchaseOrderRef
+        model = PurchaseOrder
         fields = [
             'id',
             'purchase_order_id',
@@ -173,7 +173,7 @@ class VerificationItemResultSerializer(serializers.ModelSerializer):
     price_match = serializers.SerializerMethodField()
     
     class Meta:
-        model = VerificationItemResult
+        model = ItemVerification
         fields = [
             'id',
             'item_id',
@@ -234,7 +234,7 @@ class PurchaseOrderWithItemsSerializer(serializers.ModelSerializer):
     total_amount = serializers.DecimalField(source='total', max_digits=14, decimal_places=2)
     
     class Meta:
-        model = PurchaseOrderRef
+        model = PurchaseOrder
         fields = [
             'id',
             'po_number',
@@ -274,7 +274,7 @@ class InvoiceWithItemsSerializer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField()
     
     class Meta:
-        model = InvoiceRef
+        model = Invoice
         fields = [
             'id',
             'invoice_number',
