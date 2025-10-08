@@ -146,11 +146,10 @@ The **Invoice-PO Matcher** is designed to streamline the verification process be
 
 **Admin Panel:**  
 - URL: `/admin`  
-- Username: `admin@example.com`  
-- Password: `Admin@123`  
+- Username: `admin`  
+- Password: `admin`  
 
 **Docker Deployment:**
-```bash
 
 ---
 
@@ -168,8 +167,9 @@ The **Invoice-PO Matcher** is designed to streamline the verification process be
 For issues or collaboration:  
 
 - **Author:** Zenha Fathima  
-- **Email:** zenha@example.com  
-- **LinkedIn:** [https://www.linkedin.com/in/zenha](https://www.linkedin.com/in/zenha)  
+- **Email:** fathimazenha21@gmail.com  
+- **LinkedIn:** [https://www.linkedin.com/in/zenha-fathima-b37101270/]([https://www.linkedin.com/in/zenha](https://www.linkedin.com/in/zenha-fathima-b37101270/))  
 
 ⭐ Enjoy automated PO & Invoice Matching with AI-powered insights!
+
 
