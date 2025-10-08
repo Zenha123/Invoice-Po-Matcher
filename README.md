@@ -26,7 +26,7 @@ The **Invoice-PO Matcher** streamlines the verification process between **Purcha
 
 | Layer               | Technology                                   |
 |--------------------|---------------------------------------------|
-| Backend             | Django, Django REST Framework               |
+| Backend             | Django, Django REST Framework,Swagger (API Docs & Testing)               |
 | Frontend            | React, React Router, Lucide Icons           |
 | Database            | Supabase (PostgreSQL)                        |
 | AI / NLP            | Mistral AI (Data Structuring)               |
@@ -100,6 +100,10 @@ The **Invoice-PO Matcher** streamlines the verification process between **Purcha
 
 ## 🔗 API Endpoints
 
+📘 **API Documentation & Testing:**  
+Implemented using **Swagger UI** for interactive API exploration and testing.  
+Access Swagger docs here → [https://invoice-po-matcher.onrender.com/swagger/](https://invoice-po-matcher.onrender.com/swagger/)  
+
 ### Upload APIs
 | Endpoint                                  | Method | Description                        |
 |-------------------------------------------|--------|------------------------------------|
@@ -141,61 +145,66 @@ The **Invoice-PO Matcher** streamlines the verification process between **Purcha
 
 - **Backend:** [Render Web Service](https://invoice-po-matcher.onrender.com)  
 - **Frontend:** [Render Static Site](https://invoice-po-frontend.onrender.com)  
-- **Database:** Supabase (PostgreSQL)  
+- **Database:** Supabase (PostgreSQL)
 
 **Admin Panel:**  
-- URL: `/admin`  
+- URL: `http://127.0.0.1:8000/admin/`  
 - Username: `admin`  
-- Password: `admin`  
+- Password: `admin`
+
+- **Swagger API Docs:**  
+- URL → [https://invoice-po-matcher.onrender.com/swagger/](https://invoice-po-matcher.onrender.com/swagger/)
 
 ---
+## 🏃 **How to Run Locally**
 
-## 🏃 How to Run Locally
-🐍 Backend (Django Setup)
+### 🐍 **Backend (Django Setup)**
+```bash
+# 1️⃣ Clone repository
+git clone https://github.com/Zenha123/invoice-po-matcher.git
+cd invoice-po-matcher
 
-1. #Clone the repository:  
-- git clone https://github.com/Zenha123/invoice-po-matcher.git
-- cd invoice-po-matcher
+# 2️⃣ Create and activate virtual environment
+python -m venv venv
+venv\Scripts\activate     # Windows
+# or
+source venv/bin/activate  # macOS/Linux
 
-2. #Create and activate a virtual environment:
-- python -m venv venv 
-- venv\Scripts\activate
-    
-3. #Install dependencies:
-- pip install -r requirements.txt
-   
-4. #Set up environment variables:
-- SECRET_KEY=your_django_secret_key
-- DEBUG=True
-- SUPABASE_URL=your_supabase_url
-- SUPABASE_KEY=your_supabase_key
-- MISTRAL_API_KEY=your_mistral_api_key
-   
-5. #Apply database migrations:
-- python manage.py makemigrations
-- python manage.py migrate
+# 3️⃣ Install dependencies
+pip install -r requirements.txt
 
-6. #Create a superuser (for admin access):
-- python manage.py createsuperuser
+# 4️⃣ Set up environment variables
+SECRET_KEY=your_django_secret_key  
+DEBUG=True  
+SUPABASE_URL=your_supabase_url  
+SUPABASE_KEY=your_supabase_key  
+MISTRAL_API_KEY=your_mistral_api_key  
 
-7. #Collect static files (if required):
-- python manage.py collectstatic --noinput
+# 5️⃣ Apply migrations
+python manage.py makemigrations
+python manage.py migrate
 
-8. #Run the development server:
-- python manage.py runserver
+# 6️⃣ Create superuser
+python manage.py createsuperuser
 
-⚛️ #Frontend (React Setup)
+# 7️⃣ Collect static files
+python manage.py collectstatic --noinput
 
-1. #Navigate to the frontend directory: 
+# 8️⃣ Run development server
+python manage.py runserver
+
+⚛️ Frontend (React Setup)
+
+# 1️⃣ Navigate to the frontend directory: 
 - cd invoice-frontend
 
-2. #Set up environment variables:
+# 2️⃣ Set up environment variables:
 - VITE_API_BASE_URL=http://127.0.0.1:8000/api
   
-3. #Run the React app:
+# 3️⃣Run the React app:
 - npm run dev
   
-# The backend and frontend will automatically be available at:
+# The backend and frontend will locally  available at:
 
 - Backend → http://localhost:8000
 - Frontend → http://localhost:5173
@@ -203,7 +212,7 @@ The **Invoice-PO Matcher** streamlines the verification process between **Purcha
 🐳 Run with Docker (Optional)
 - docker-compose up --build
 
-
+```
 ## ⚡ Tech Highlights
 
 - 📄 **Multiple Invoice Support:** Each PO can have multiple invoices linked and matched automatically  
