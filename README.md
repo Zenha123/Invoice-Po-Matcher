@@ -199,7 +199,7 @@ python manage.py runserver
 - cd invoice-frontend
 
 # 2️⃣ Set up environment variables:
-- VITE_API_BASE_URL=[http://127.0.0.1:8000/api](http://127.0.0.1:8000/api)
+- VITE_API_BASE_URL= http://127.0.0.1:8000/api
   
 # 3️⃣Run the React app:
 - npm run dev
