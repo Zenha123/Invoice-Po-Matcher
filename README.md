@@ -7,11 +7,8 @@ A web application for extracting, verifying, and reconciling POs and invoices ef
 
 ## 🚀 Project Overview
 
-The **Invoice-PO Matcher** streamlines the verification process between **Purchase Orders (POs)** and **Invoices**. Users can:
 
-- Upload multiple invoices per PO  
-- Automatically match POs with linked invoices  
-- Highlight discrepancies with item-level comparison  
+The **Invoice-PO Matcher** is designed to streamline the verification process between  **Purchase Orders (POs)** and **Invoices**. Users can upload multiple invoices per PO, and the system intelligently matches and highlights discrepancies. Data extraction is automated using OCR and structured with Mistral AI for accurate insights. 
 
 **Key Features:**
 
@@ -155,22 +152,24 @@ The **Invoice-PO Matcher** streamlines the verification process between **Purcha
 **Docker Deployment:**
 ```bash
 
+---
 
-Tech Highlights
+## ⚡ Tech Highlights
 
-Multiple Invoice Support: Each PO can have multiple invoices linked and matched automatically
+- 📄 **Multiple Invoice Support:** Each PO can have multiple invoices linked and matched automatically  
+- 🤖 **AI-Powered Extraction:** Mistral AI structures data for precise item-level comparison  
+- 🐳 **Full Docker Support:** Run the project locally or in cloud environments  
+- 🌐 **Hosted & Accessible:** Backend + Frontend deployed on Render, DB on Supabase  
 
-AI-Powered Extraction: Mistral AI structures data for precise item-level comparison
+---
 
-Full Docker Support: Run the project locally or in cloud environments
+## 📞 Contact / Support
 
-Hosted & Accessible: Backend + Frontend deployed on Render, DB on Supabase
+For issues or collaboration:  
 
-📞 Contact / Support
+- **Author:** Zenha Fathima  
+- **Email:** zenha@example.com  
+- **LinkedIn:** [https://www.linkedin.com/in/zenha](https://www.linkedin.com/in/zenha)  
 
-For issues or collaboration:
+⭐ Enjoy automated PO & Invoice Matching with AI-powered insights!
 
-Author: Zenha Fathima
-Email: zenha@example.com
-
-LinkedIn: https://www.linkedin.com/in/zenha
