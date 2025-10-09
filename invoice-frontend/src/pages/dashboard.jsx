@@ -1,8 +1,6 @@
 
 
 
-
-// full working code
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -24,13 +22,14 @@ import {
   AlertCircle,
   X,
   ArrowLeft,
+  MoreHorizontal,
 } from "lucide-react";
 import "../styles/dashboard.css";
 
 // API base URL
-// const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
+const DISCREPANCIES_PER_PAGE = 5; // Number of rows to show initially and per load
 
 const POReviewPage = () => {
   const [view, setView] = useState("All");
@@ -40,6 +39,9 @@ const POReviewPage = () => {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // NEW: Track visible discrepancies count for each match item
+  const [visibleDiscrepancies, setVisibleDiscrepancies] = useState({});
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -66,14 +68,41 @@ const POReviewPage = () => {
       
       const response = await axios.get(url);
       
-      setMatchData(response.data.match_data || []);
+      const matchDataFromApi = response.data.match_data || [];
+      setMatchData(matchDataFromApi);
       setDocuments(response.data.documents || []);
+      
+      // Initialize visible discrepancies count for each match item
+      const initialVisibleCounts = {};
+      matchDataFromApi.forEach((item) => {
+        if (item.discrepancies && item.discrepancies.length > 0) {
+          initialVisibleCounts[item.id] = DISCREPANCIES_PER_PAGE;
+        }
+      });
+      setVisibleDiscrepancies(initialVisibleCounts);
+      
     } catch (err) {
       console.error('Error fetching review page data:', err);
       setError('Failed to load review data. Please refresh the page.');
     } finally {
       setLoading(false);
     }
+  };
+
+  // NEW: Handle load more discrepancies
+  const handleLoadMore = (itemId) => {
+    setVisibleDiscrepancies(prev => ({
+      ...prev,
+      [itemId]: (prev[itemId] || DISCREPANCIES_PER_PAGE) + DISCREPANCIES_PER_PAGE
+    }));
+  };
+
+  // NEW: Handle show less discrepancies
+  const handleShowLess = (itemId) => {
+    setVisibleDiscrepancies(prev => ({
+      ...prev,
+      [itemId]: DISCREPANCIES_PER_PAGE
+    }));
   };
 
   const StatusBadge = ({ status, description }) => (
@@ -114,8 +143,101 @@ const POReviewPage = () => {
     return icons[iconName] || <FileText size={size} />;
   };
 
+  // UPDATED: Render Discrepancy Table with Pagination
+  const renderDiscrepancyTable = (discrepancies, itemId) => {
+    if (!discrepancies || discrepancies.length === 0) {
+      return null;
+    }
+
+    const visibleCount = visibleDiscrepancies[itemId] || DISCREPANCIES_PER_PAGE;
+    const displayedDiscrepancies = discrepancies.slice(0, visibleCount);
+    const hasMore = visibleCount < discrepancies.length;
+    const canShowLess = visibleCount > DISCREPANCIES_PER_PAGE;
+    const remainingCount = discrepancies.length - visibleCount;
+
+    return (
+      <div className="discrepancy-section">
+        <div className="discrepancy-header">
+          <AlertTriangle size={20} className="warning-icon" />
+          <h3>Discrepancies Found ({discrepancies.length})</h3>
+          <span className="discrepancy-count-badge">
+            Showing {displayedDiscrepancies.length} of {discrepancies.length}
+          </span>
+        </div>
+        
+        <div className="discrepancy-table-container">
+          <table className="discrepancy-table">
+            <thead>
+              <tr>
+                <th>Level</th>
+                <th>Type</th>
+                <th>Field</th>
+                <th>Expected</th>
+                <th>Actual</th>
+                <th>Message</th>
+                <th>Created At</th>
+              </tr>
+            </thead>
+            <tbody>
+              {displayedDiscrepancies.map((discrepancy) => (
+                <tr key={discrepancy.id} className={`discrepancy-row ${discrepancy.level}`}>
+                  <td className="discrepancy-level">
+                    <span className={`level-badge ${discrepancy.level}`}>
+                      {discrepancy.level_display}
+                    </span>
+                  </td>
+                  <td className="discrepancy-type">
+                    <span className="type-text">{discrepancy.type_display}</span>
+                  </td>
+                  <td className="discrepancy-field">
+                    {discrepancy.field || '-'}
+                  </td>
+                  <td className="discrepancy-expected">
+                    {discrepancy.expected || '-'}
+                  </td>
+                  <td className="discrepancy-actual">
+                    {discrepancy.actual || '-'}
+                  </td>
+                  <td className="discrepancy-message">
+                    {discrepancy.message}
+                  </td>
+                  <td className="discrepancy-timestamp">
+                    {discrepancy.created_at_formatted}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Load More / Show Less Buttons */}
+        {(hasMore || canShowLess) && (
+          <div className="discrepancy-pagination">
+            {hasMore && (
+              <button 
+                className="load-more-btn"
+                onClick={() => handleLoadMore(itemId)}
+              >
+                <MoreHorizontal size={18} />
+                Load More ({remainingCount} remaining)
+              </button>
+            )}
+            {canShowLess && (
+              <button 
+                className="show-less-btn"
+                onClick={() => handleShowLess(itemId)}
+              >
+                <ChevronUp size={18} />
+                Show Less
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderPOItems = (po) => (
-    
     <div className="document-details">
       <div className="document-header">
         <h4>Purchase Order Details - {po.po_number || po.poNumber}</h4>
@@ -335,6 +457,15 @@ const POReviewPage = () => {
           </div>
         </div>
 
+        {/* Discrepancy Tables - One for each match result with pagination */}
+        {matchData.length > 0 && matchData.map((item, idx) => (
+          item.discrepancies && item.discrepancies.length > 0 && (
+            <div key={`discrepancy-${item.id || idx}`}>
+              {renderDiscrepancyTable(item.discrepancies, item.id || `item-${idx}`)}
+            </div>
+          )
+        ))}
+
         {/* Document Section */}
         {documents.length > 0 && (
           <div className="docs-section">
@@ -392,8 +523,3 @@ const POReviewPage = () => {
 };
 
 export default POReviewPage;
-
-
-
-
-

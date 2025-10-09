@@ -2064,7 +2064,7 @@ body {
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  background: transparent;
+ background: #0a2633;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   color: #666;
@@ -2074,7 +2074,7 @@ body {
 }
 
 .back-button:hover {
-  background: #f5f5f5;
+  background: #0a2633;
   border-color: #2563eb;
   color: #2563eb;
 }
@@ -2921,10 +2921,10 @@ body {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: white;
+background: #0a2633;
   border: 1.5px solid var(--neutral-300);
   border-radius: 10px;
-  color: var(--neutral-700);
+  color: white;
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
@@ -2934,7 +2934,7 @@ body {
 }
 
 .back-button:hover {
-  background: var(--primary-50);
+  background: #0a2633;
   border-color: var(--primary-500);
   color: var(--primary-600);
   transform: translateY(-2px);
@@ -3174,3 +3174,351 @@ body {
 
 
 
+
+
+/* ============================================
+   DISCREPANCY TABLE STYLES (Updated)
+   ============================================ */
+
+.discrepancy-section {
+  margin: 2rem 0;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  border: 2px solid #fef3c7;
+}
+
+.discrepancy-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, #fef3c7 0%, #fd8a8a 100%);
+  border-bottom: 2px solid #e18686;
+}
+
+.discrepancy-header .warning-icon {
+  color: #f59e0b;
+  flex-shrink: 0;
+}
+
+.discrepancy-header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #92400e;
+  flex: 1;
+}
+
+/* NEW: Count Badge in Header */
+.discrepancy-count-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.875rem;
+  background: #fff;
+  border: 1px solid #fbbf24;
+  border-radius: 20px;
+  font-size: 0.813rem;
+  font-weight: 600;
+  color: #92400e;
+  white-space: nowrap;
+}
+
+.discrepancy-table-container {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.discrepancy-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  background: #fff;
+}
+
+.discrepancy-table thead {
+  background: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.discrepancy-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.discrepancy-table tbody tr {
+  border-bottom: 1px solid #f3f4f6;
+  transition: background-color 0.2s ease;
+}
+
+.discrepancy-table tbody tr:hover {
+  background-color: #fef3c7;
+}
+
+.discrepancy-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.discrepancy-table td {
+  padding: 1rem;
+  color: #1f2937;
+  vertical-align: top;
+}
+
+/* Level Badge */
+.discrepancy-level {
+  padding: 0.75rem 1rem;
+}
+
+.level-badge {
+  display: inline-block;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.813rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.level-badge.header {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+}
+
+.level-badge.item {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+.level-badge.total {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+/* Type Column */
+.discrepancy-type {
+  min-width: 150px;
+}
+
+.type-text {
+  font-weight: 500;
+  color: #374151;
+}
+
+/* Field Column */
+.discrepancy-field {
+  font-family: 'Monaco', 'Courier New', monospace;
+  font-size: 0.875rem;
+  color: #6b7280;
+  min-width: 100px;
+}
+
+/* Expected and Actual Columns */
+.discrepancy-expected,
+.discrepancy-actual {
+  font-weight: 500;
+  min-width: 100px;
+}
+
+.discrepancy-expected {
+  color: #059669;
+}
+
+.discrepancy-actual {
+  color: #dc2626;
+}
+
+/* Message Column */
+.discrepancy-message {
+  max-width: 350px;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+/* Timestamp Column */
+.discrepancy-timestamp {
+  color: #6b7280;
+  font-size: 0.813rem;
+  white-space: nowrap;
+  min-width: 180px;
+}
+
+/* ============================================
+   PAGINATION CONTROLS (NEW)
+   ============================================ */
+
+.discrepancy-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  background: #fafafa;
+  border-top: 1px solid #e5e7eb;
+}
+
+.load-more-btn,
+.show-less-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.load-more-btn {
+  background: linear-gradient(135deg, #fbbf24 0%, #fd8a8a 100%);
+  color: #fff;
+  border-color: #f59e0b;
+  /* background-color: #fd8a8a; */
+}
+
+.load-more-btn:hover {
+  background: linear-gradient(135deg, #fd8a8a 0%, #f3c0c0 100%);
+  border-color: #d97706;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.load-more-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.2);
+}
+
+.show-less-btn {
+  background: linear-gradient(135deg, #fbbf24 0%, #fd8a8a 100%);
+  color: #ffffff;
+  border-color: #f59e0b;
+}
+
+.show-less-btn:hover {
+  background: linear-gradient(135deg, #fd8a8a 0%, #f3c0c0 100%);
+  color: #ffffff;
+  border-color: #f59e0b;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.show-less-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* Button Icons */
+.load-more-btn svg,
+.show-less-btn svg {
+  flex-shrink: 0;
+}
+
+/* Loading State for Buttons (optional enhancement) */
+.load-more-btn:disabled,
+.show-less-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1200px) {
+  .discrepancy-table {
+    font-size: 0.85rem;
+  }
+  
+  .discrepancy-table th,
+  .discrepancy-table td {
+    padding: 0.75rem;
+  }
+  
+  .discrepancy-message {
+    max-width: 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .discrepancy-header {
+    padding: 1rem;
+    flex-wrap: wrap;
+  }
+  
+  .discrepancy-header h3 {
+    font-size: 1rem;
+    flex: 1 1 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .discrepancy-count-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.625rem;
+  }
+  
+  .discrepancy-table {
+    font-size: 0.75rem;
+  }
+  
+  .discrepancy-table th,
+  .discrepancy-table td {
+    padding: 0.5rem;
+  }
+  
+  .level-badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  .discrepancy-pagination {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+  
+  .load-more-btn,
+  .show-less-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* Empty state for no discrepancies */
+.no-discrepancies {
+  padding: 2rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+.no-discrepancies-icon {
+  color: #10b981;
+  margin-bottom: 0.5rem;
+}
+
+/* Animation for row appearance */
+@keyframes fadeInRow {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.discrepancy-table tbody tr {
+  animation: fadeInRow 0.3s ease-out;
+}
