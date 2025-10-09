@@ -1,3 +1,4 @@
+# ocr_utils.py
 import os
 import re
 import io
@@ -8,33 +9,34 @@ import fitz
 from PIL import Image, ImageEnhance
 import pytesseract
 
-# New Mistral SDK
+# Mistral SDK (latest version)
 from mistralai import Mistral
 
 # Setup logging
 logger = logging.getLogger(__name__)
 
 # Configuration constants
-MAX_TEXT_LENGTH = 15000  # Maximum characters to send to Mistral API
-MISTRAL_TIMEOUT = 90  # Seconds for Mistral API timeout
-USE_FAST_MODEL = True  # Use mistral-small for faster processing
-MAX_PDF_PAGES = 3  # Only process first N pages of PDF
+MAX_TEXT_LENGTH = 20000  # Increased limit
+MISTRAL_TIMEOUT = 120  # Increased timeout
+USE_FAST_MODEL = False  # Use mistral-large for better accuracy
+MAX_PDF_PAGES = 5  # Process more pages
 
 # -------- Regex patterns --------
 _money_rx = re.compile(r"[$₹€£]?\s*([0-9]+[0-9\.,]*)")
-_invoice_rx = re.compile(r"(Invoice\s*#|Invoice\s*:|Invoice\:|\bINV\b|\bBill\b)\s*([A-Z0-9\-\_]+)", re.I)
-_po_rx = re.compile(r"(PO\s*#|PO\s*:|Purchase Order\s*#|\bP\.O\.\b)\s*([A-Z0-9\-\_]+)", re.I)
+_invoice_rx = re.compile(r"(Invoice\s*#|Invoice\s*ID|Invoice\s*:|Invoice\:|\bINV\b|\bBill\b)\s*[:\-]?\s*([A-Z0-9\-\_]+)", re.I)
+_po_rx = re.compile(r"(PO\s*#|PO\s*:|Purchase\s+Order\s*ID|Purchase Order\s*#|\bP\.O\.\b)\s*[:\-]?\s*([A-Z0-9\-\_]+)", re.I)
 _vendor_rx = re.compile(r"(Vendor|Supplier|From|Sold By|Billed From)\s*[:\-]?\s*([A-Za-z0-9&\.\,\-\s]+)", re.I)
-_date_rx = re.compile(r"(Date|Dated|Invoice Date)\s*[:\-]?\s*([A-Za-z0-9\,\-\s\/]+)", re.I)
+_date_rx = re.compile(r"(Date|Dated|Invoice Date|Order Date)\s*[:\-]?\s*([0-9]{4}\-[0-9]{2}\-[0-9]{2}|[0-9]{2}\/[0-9]{2}\/[0-9]{4}|[A-Za-z0-9\,\-\s\/]+)", re.I)
 
 _invoice_indicators = [
-    r"invoice\s*#", r"tax\s*invoice", r"bill\s*to", r"amount\s*due", 
+    r"invoice\s*#", r"invoice\s*id", r"tax\s*invoice", r"bill\s*to", r"amount\s*due", 
     r"subtotal", r"total\s*due", r"balance\s*due", r"invoice\s*date",
     r"tax\s*amount", r"grand\s*total", r"invoice\s*total"
 ]
 _po_indicators = [
-    r"purchase\s*order", r"po\s*#", r"ordered\s*by", r"supplier",
-    r"ship\s*to", r"delivery\s*date", r"order\s*date", r"p\.o\.\s*number"
+    r"purchase\s*order", r"po\s*#", r"po\s*id", r"ordered\s*by", r"supplier",
+    r"ship\s*to", r"delivery\s*date", r"order\s*date", r"p\.o\.\s*number",
+    r"purchase\s*order\s*id"
 ]
 
 
@@ -51,6 +53,8 @@ def classify_document_type(text):
     invoice_score = sum(1 for p in _invoice_indicators if re.search(p, text_lower))
     po_score = sum(1 for p in _po_indicators if re.search(p, text_lower))
     
+    log(f"Classification scores - Invoice: {invoice_score}, PO: {po_score}")
+    
     if invoice_score > po_score:
         return "invoice"
     elif po_score > invoice_score:
@@ -64,6 +68,7 @@ def run_local_ocr(image: Image.Image) -> str:
     """
     log("Running local OCR with pytesseract")
     try:
+        # Use better config for tables and structured data
         config = r'--oem 3 --psm 6'
         text = pytesseract.image_to_string(image, config=config)
         log(f"OCR extracted {len(text)} characters")
@@ -86,6 +91,10 @@ def preprocess_image(image: Image.Image) -> Image.Image:
         enhancer = ImageEnhance.Contrast(image)
         image = enhancer.enhance(2.0)
         
+        # Enhance sharpness
+        enhancer = ImageEnhance.Sharpness(image)
+        image = enhancer.enhance(1.5)
+        
         return image
     except Exception as e:
         logger.warning(f"Image preprocessing failed: {e}")
@@ -95,7 +104,6 @@ def preprocess_image(image: Image.Image) -> Image.Image:
 def file_to_text(filepath: str) -> str:
     """
     Convert PDF or image file to text using OCR
-    Optimized for large files - only processes first few pages
     """
     log("Processing file:", filepath)
     ext = os.path.splitext(filepath)[1].lower()
@@ -115,19 +123,25 @@ def file_to_text(filepath: str) -> str:
                     log(f"Processing page {i+1}/{pages_to_process}")
                     page = doc[i]
                     
-                    # Convert page to image at 300 DPI
+                    # Try to extract text directly first (faster for text-based PDFs)
+                    direct_text = page.get_text()
+                    if direct_text and len(direct_text.strip()) > 50:
+                        log(f"Page {i+1}: Using direct text extraction")
+                        all_text.append(direct_text)
+                        continue
+                    
+                    # If no text, use OCR
+                    log(f"Page {i+1}: Using OCR")
                     pix = page.get_pixmap(dpi=300)
                     img_data = pix.tobytes("png")
                     image = Image.open(io.BytesIO(img_data))
                     
-                    # Preprocess and OCR
                     processed_image = preprocess_image(image)
                     page_text = run_local_ocr(processed_image)
                     
                     if page_text.strip():
                         all_text.append(page_text)
                     
-                    # Clean up
                     del pix, image, processed_image
                     
                 except Exception as page_error:
@@ -160,20 +174,48 @@ def truncate_text_smart(text: str, max_length: int) -> str:
     if len(text) <= max_length:
         return text
     
-    # Keep 70% from start, 30% from end
-    keep_start = int(max_length * 0.7)
+    # Keep 80% from start, 20% from end
+    keep_start = int(max_length * 0.8)
     keep_end = max_length - keep_start
     
-    truncated = text[:keep_start] + "\n\n[... MIDDLE SECTION TRUNCATED ...]\n\n" + text[-keep_end:]
+    truncated = text[:keep_start] + "\n\n[... MIDDLE TRUNCATED ...]\n\n" + text[-keep_end:]
     
     log(f"Text truncated from {len(text)} to {len(truncated)} characters")
     return truncated
 
 
+def clean_json_response(text: str) -> str:
+    """
+    Clean Mistral response to extract valid JSON
+    """
+    # Remove markdown code blocks
+    text = text.strip()
+    if text.startswith("```json"):
+        text = text[7:]
+    elif text.startswith("```"):
+        text = text[3:]
+    if text.endswith("```"):
+        text = text[:-3]
+    text = text.strip()
+    
+    # Extract JSON object
+    json_match = re.search(r'(\{[\s\S]*\})', text)
+    if json_match:
+        text = json_match.group(1)
+    
+    # Fix common JSON issues
+    # Remove trailing commas before closing braces/brackets
+    text = re.sub(r',(\s*[}\]])', r'\1', text)
+    
+    # Fix unescaped newlines in strings
+    text = re.sub(r'(?<!\\)\\n', r'\\\\n', text)
+    
+    return text
+
+
 def run_mistral_extraction(ocr_text: str, api_key: str, doc_type_hint: str = None) -> dict:
     """
-    Extract structured data using Mistral AI API
-    Optimized with timeout handling and text truncation
+    Extract structured data using Mistral AI API - Optimized version
     """
     if not ocr_text or not api_key:
         return {"raw_text": ocr_text, "doc_type": "unknown"}
@@ -183,81 +225,82 @@ def run_mistral_extraction(ocr_text: str, api_key: str, doc_type_hint: str = Non
         original_length = len(ocr_text)
         if len(ocr_text) > MAX_TEXT_LENGTH:
             ocr_text = truncate_text_smart(ocr_text, MAX_TEXT_LENGTH)
-            log(f"Text truncated from {original_length} to {len(ocr_text)} chars for Mistral API")
+            log(f"Text truncated from {original_length} to {len(ocr_text)} chars")
         
-        # Choose model based on configuration
-        model = "mistral-small-latest" if USE_FAST_MODEL else "mistral-large-latest"
+        # Use mistral-large for better accuracy
+        model = "mistral-large-latest"
         log(f"Calling Mistral API with model: {model}")
         
         client = Mistral(api_key=api_key)
 
         # Build document-type specific prompt
         if doc_type_hint == "po":
-            doc_instruction = "This is a Purchase Order document."
-            expected_fields = """
-            "po_number": "PO identifier",
-            "order_date": "date when order was placed",
-            "requested_by": "person/department who requested",
-            """
+            doc_instruction = "This is a Purchase Order (PO) document."
+            id_field = '"po_number"'
         else:
             doc_instruction = "This is an Invoice document."
-            expected_fields = """
-            "invoice_number": "invoice identifier",
-            "invoice_date": "date of invoice",
-            "po_number": "referenced PO number if any",
-            """
+            id_field = '"invoice_number"'
 
-        prompt = f"""You are a precise document parser. {doc_instruction}
+        prompt = f"""You are a precise financial document parser. {doc_instruction}
 
-Extract ALL available fields into JSON with this exact structure:
+Extract ALL fields into a JSON object. Be extremely careful with numbers - extract them as numbers, not strings.
 
+Required JSON structure:
 {{
   "doc_type": "invoice" or "po",
-  "id": "document number",
-  {expected_fields}
-  "vendor": "vendor/supplier name",
-  "currency": "currency code (USD, EUR, INR, etc.)",
-  "date": "date in YYYY-MM-DD format if possible",
-  "subtotal": numeric value or null,
-  "tax": numeric value or null,
-  "total": numeric value or null,
+  "id": "primary document number",
+  "invoice_number": "for invoices only",
+  "po_number": "PO reference (can be in invoice or PO)",
+  "vendor": "vendor/supplier company name",
+  "buyer": "buyer/customer company name", 
+  "currency": "USD, EUR, INR, etc.",
+  "date": "document date in YYYY-MM-DD format",
+  "invoice_date": "for invoices",
+  "order_date": "for POs",
+  "subtotal": number or null,
+  "tax": number or null,
+  "total": number or null,
   "items": [
     {{
-      "description": "item description",
-      "quantity": numeric value,
-      "unit_price": numeric value,
-      "line_total": numeric value
+      "item_id": "item identifier",
+      "description": "item name/description",
+      "quantity": number,
+      "unit_price": number,
+      "line_total": number
     }}
   ]
 }}
 
-IMPORTANT RULES:
-1. Return ONLY valid JSON, no markdown or explanations
-2. Extract ALL numeric values as numbers, not strings
-3. Use null for missing fields
-4. Extract as many line items as you can find
-5. If you find a PO reference in an invoice, include it as "po_number"
+CRITICAL RULES:
+1. Return ONLY valid JSON - no markdown, no code blocks, no explanations
+2. Extract ALL numeric values as actual numbers (not strings with currency symbols)
+3. For missing fields, use null (not empty string)
+4. Extract ALL line items you can find
+5. If this is an invoice referencing a PO, include both invoice_number and po_number
+6. Parse quantities and prices very carefully
+7. Ensure all items array entries have complete data
 
-OCR TEXT:
+DOCUMENT TEXT:
 {ocr_text}
-"""
 
-        # Call Mistral API with timeout
+Return ONLY the JSON object:"""
+
+        # Call Mistral API
         response = client.chat.complete(
             model=model,
             messages=[
                 {
                     "role": "system", 
-                    "content": "You are a JSON extractor for financial documents. Return ONLY valid JSON with no markdown formatting."
+                    "content": "You are a precise JSON extractor. Return ONLY valid JSON with no formatting."
                 },
                 {
                     "role": "user", 
                     "content": prompt
                 },
             ],
-            temperature=0.1,
-            max_tokens=2500,
-            response_format={"type": "json_object"}  # Force JSON response
+            temperature=0.0,
+            max_tokens=3000,
+            response_format={"type": "json_object"}
         )
 
         # Extract response text
@@ -265,69 +308,94 @@ OCR TEXT:
         
         if not text_response:
             log("Mistral returned empty response")
-            return {"raw_text": ocr_text, "doc_type": "unknown", "extraction_method": "mistral_failed"}
+            return {"raw_text": ocr_text, "doc_type": "unknown", "extraction_method": "mistral_empty"}
 
         log(f"Mistral response received ({len(text_response)} chars)")
 
-        # Parse JSON response
+        # Clean and parse JSON
         try:
-            # Try direct JSON parse first
-            data = json.loads(text_response)
-        except json.JSONDecodeError:
-            # Fallback: extract JSON from markdown code blocks
-            json_match = re.search(r"```json\s*(\{[\s\S]*?\})\s*```", text_response)
-            if not json_match:
-                json_match = re.search(r"(\{[\s\S]*\})", text_response)
-            
-            if json_match:
-                json_text = json_match.group(1)
-                try:
-                    data = json.loads(json_text)
-                except json.JSONDecodeError as e:
-                    logger.error(f"Failed to parse JSON from Mistral: {e}")
-                    logger.debug(f"Response was: {text_response[:500]}")
-                    return {"raw_text": ocr_text, "doc_type": "unknown", "extraction_method": "mistral_parse_failed"}
-            else:
-                logger.error("No JSON found in Mistral response")
-                return {"raw_text": ocr_text, "doc_type": "unknown", "extraction_method": "mistral_no_json"}
+            cleaned_json = clean_json_response(text_response)
+            data = json.loads(cleaned_json)
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON parse error: {e}")
+            logger.debug(f"Response: {text_response[:500]}")
+            return {"raw_text": ocr_text, "doc_type": "unknown", "extraction_method": "mistral_parse_failed", "error": str(e)}
 
+        # Normalize the data
+        # Set primary ID
+        if not data.get("id"):
+            data["id"] = data.get("invoice_number") or data.get("po_number")
+        
+        # Ensure doc_type is set
+        if not data.get("doc_type"):
+            data["doc_type"] = doc_type_hint or "unknown"
+        
         # Normalize numeric fields
         for field in ["subtotal", "tax", "total"]:
-            if isinstance(data.get(field), str):
-                try:
-                    # Remove non-numeric characters except decimal point
-                    cleaned = re.sub(r"[^\d.]", "", data[field])
-                    data[field] = float(cleaned) if cleaned else None
-                except Exception:
-                    data[field] = None
+            if field in data:
+                if isinstance(data[field], str):
+                    try:
+                        cleaned = re.sub(r"[^\d.]", "", data[field])
+                        data[field] = float(cleaned) if cleaned else None
+                    except Exception:
+                        data[field] = None
+                elif isinstance(data[field], (int, float)):
+                    data[field] = float(data[field])
 
         # Normalize items array
         if "items" not in data or not isinstance(data["items"], list):
             data["items"] = []
         
+        normalized_items = []
         for item in data["items"]:
+            normalized_item = {
+                "item_id": item.get("item_id"),
+                "description": item.get("description"),
+                "quantity": None,
+                "unit_price": None,
+                "line_total": None
+            }
+            
             for field in ["quantity", "unit_price", "line_total"]:
-                if isinstance(item.get(field), str):
+                value = item.get(field)
+                if isinstance(value, str):
                     try:
-                        cleaned = re.sub(r"[^\d.]", "", item[field])
-                        item[field] = float(cleaned) if cleaned else None
+                        cleaned = re.sub(r"[^\d.]", "", value)
+                        normalized_item[field] = float(cleaned) if cleaned else None
                     except Exception:
-                        item[field] = None
+                        normalized_item[field] = None
+                elif isinstance(value, (int, float)):
+                    normalized_item[field] = float(value)
+                else:
+                    normalized_item[field] = value
+            
+            normalized_items.append(normalized_item)
+        
+        data["items"] = normalized_items
 
         # Add metadata
-        data["raw_text"] = ocr_text[:1000]  # Store only first 1000 chars
+        data["raw_text"] = ocr_text[:1000]
         data["extraction_method"] = "mistral"
 
         # Log summary
-        log("Mistral Extraction Summary:")
+        log("=" * 60)
+        log("MISTRAL EXTRACTION SUMMARY:")
         log(f"  Document Type: {data.get('doc_type')}")
         log(f"  Document ID: {data.get('id')}")
+        log(f"  Invoice Number: {data.get('invoice_number')}")
+        log(f"  PO Number: {data.get('po_number')}")
         log(f"  Vendor: {data.get('vendor')}")
+        log(f"  Buyer: {data.get('buyer')}")
         log(f"  Currency: {data.get('currency')}")
         log(f"  Date: {data.get('date')}")
+        log(f"  Subtotal: {data.get('subtotal')}")
+        log(f"  Tax: {data.get('tax')}")
         log(f"  Total: {data.get('total')}")
         log(f"  Items Count: {len(data.get('items', []))}")
-        log("-" * 50)
+        if data.get('items'):
+            for i, item in enumerate(data['items'], 1):
+                log(f"    Item {i}: {item.get('description')} - Qty: {item.get('quantity')} - Price: {item.get('unit_price')}")
+        log("=" * 60)
 
         return data
 
@@ -348,8 +416,8 @@ def parse_items_from_text(text: str) -> list:
     items = []
     lines = [l.strip() for l in text.splitlines() if l.strip()]
     
-    # Pattern 1: Description Qty Price Total
-    item_pattern = re.compile(r"(.+?)\s+(\d+)\s+([$₹€£\d\.,]+)\s+([$₹€£\d\.,]+)$", re.I)
+    # Pattern for structured item lines
+    item_pattern = re.compile(r'(.+?)\s+(\d+)\s+([\d\.,]+)\s*(?:USD|EUR|INR|Rs|₹|\$|€|£)?\s+([\d\.,]+)', re.I)
     
     for line in lines:
         match = item_pattern.search(line)
@@ -357,8 +425,8 @@ def parse_items_from_text(text: str) -> list:
             desc, qty, price, total = match.groups()
             try:
                 quantity = int(qty)
-                unit_price = float(re.sub(r"[^\d.]", "", price))
-                line_total = float(re.sub(r"[^\d.]", "", total))
+                unit_price = float(price.replace(",", ""))
+                line_total = float(total.replace(",", ""))
                 
                 items.append({
                     "description": desc.strip(),
@@ -369,36 +437,6 @@ def parse_items_from_text(text: str) -> list:
                 continue
             except Exception:
                 pass
-        
-        # Pattern 2: Any line with monetary values
-        money_matches = list(_money_rx.finditer(line))
-        if len(money_matches) >= 1:
-            # Try to extract quantity
-            quantity = 1
-            qty_match = re.search(r"\b(\d+)\s*(?:x|@|\*|qty|quantity)\b", line, re.I)
-            if qty_match:
-                try:
-                    quantity = int(qty_match.group(1))
-                except Exception:
-                    quantity = 1
-            
-            # Last monetary value is likely the line total or unit price
-            last_price = money_matches[-1].group(1).replace(",", "")
-            try:
-                price = float(last_price)
-            except Exception:
-                price = None
-            
-            # Extract description (everything before monetary values)
-            desc = re.sub(r"[\$₹€£\d\.,]+\s*$", "", line).strip("•- \t")
-            
-            if desc and len(desc) > 3:
-                items.append({
-                    "description": desc,
-                    "quantity": quantity,
-                    "unit_price": price,
-                    "line_total": round(quantity * price, 2) if price is not None else None
-                })
     
     log(f"Regex parsed {len(items)} line items")
     return items
@@ -406,7 +444,7 @@ def parse_items_from_text(text: str) -> list:
 
 def extract_with_regex(text: str, doc_type: str = None) -> dict:
     """
-    Fallback extraction using regex patterns when Mistral fails
+    Fallback extraction using regex patterns
     """
     log("Using regex-based extraction")
     
@@ -424,97 +462,66 @@ def extract_with_regex(text: str, doc_type: str = None) -> dict:
         "extraction_method": "regex"
     }
 
-    # Extract ID based on document type
-    if doc_type == "invoice":
-        mi = _invoice_rx.search(text)
-        if mi:
-            result["id"] = mi.group(2).strip()
-    elif doc_type == "po":
-        mpo = _po_rx.search(text)
-        if mpo:
-            result["id"] = mpo.group(2).strip()
+    # Extract IDs
+    invoice_match = _invoice_rx.search(text)
+    po_match = _po_rx.search(text)
     
-    # Fallback: try both patterns
-    if not result["id"]:
-        mi = _invoice_rx.search(text) or _po_rx.search(text)
-        if mi:
-            result["id"] = mi.group(2).strip()
+    if doc_type == "invoice" and invoice_match:
+        result["id"] = invoice_match.group(2).strip()
+        result["invoice_number"] = invoice_match.group(2).strip()
+    elif doc_type == "po" and po_match:
+        result["id"] = po_match.group(2).strip()
+        result["po_number"] = po_match.group(2).strip()
+    
+    # If invoice references a PO, extract both
+    if invoice_match and po_match:
+        result["invoice_number"] = invoice_match.group(2).strip()
+        result["po_number"] = po_match.group(2).strip()
+        result["id"] = invoice_match.group(2).strip()
 
     # Extract vendor
-    mv = _vendor_rx.search(text)
-    if mv:
-        result["vendor"] = mv.group(2).strip().split("\n")[0].strip()[:100]
+    vendor_match = _vendor_rx.search(text)
+    if vendor_match:
+        result["vendor"] = vendor_match.group(2).strip().split("\n")[0].strip()[:100]
 
     # Extract date
-    md = _date_rx.search(text)
-    if md:
-        result["date"] = md.group(2).strip()
+    date_match = _date_rx.search(text)
+    if date_match:
+        result["date"] = date_match.group(2).strip()
 
     # Extract currency
-    currency_match = re.search(r'\b(USD|EUR|GBP|INR|CAD|AUD|JPY|CNY|Rs|₹|\$|€|£)\b', text, re.IGNORECASE)
+    currency_match = re.search(r'\b(USD|EUR|GBP|INR|CAD|AUD|JPY)\b', text, re.IGNORECASE)
     if currency_match:
-        result["currency"] = currency_match.group(1)
+        result["currency"] = currency_match.group(1).upper()
 
-    # Extract total
-    total_patterns = [
-        r"(grand\s*total|total\s*amount|amount\s*due|invoice\s*total|total\s*due|balance\s*due)[^\d]*([$₹€£\d\.,]+)",
-        r"total[^\d]*([$₹€£\d\.,]+)",
-    ]
-    
-    for pattern in total_patterns:
-        matches = re.finditer(pattern, text, re.IGNORECASE)
-        for match in matches:
-            try:
-                total_str = match.group(2 if match.lastindex == 2 else 1)
-                result["total"] = float(re.sub(r"[^\d.]", "", total_str))
-                break
-            except Exception:
-                continue
-        if result["total"] is not None:
-            break
-    
-    # Fallback: use last monetary value as total
-    if result["total"] is None:
-        all_money = list(_money_rx.finditer(text))
-        if all_money:
-            try:
-                last_val = all_money[-1].group(1).replace(",", "")
-                result["total"] = float(last_val)
-            except Exception:
-                pass
+    # Extract totals
+    total_match = re.search(r"(grand\s*total|total)[^\d]*([\d\.,]+)", text, re.IGNORECASE)
+    if total_match:
+        try:
+            result["total"] = float(total_match.group(2).replace(",", ""))
+        except Exception:
+            pass
 
     # Extract subtotal
-    subtotal_match = re.search(r"(sub[\s\-]?total)[^\d]*([$₹€£\d\.,]+)", text, re.IGNORECASE)
+    subtotal_match = re.search(r"subtotal[^\d]*([\d\.,]+)", text, re.IGNORECASE)
     if subtotal_match:
         try:
-            result["subtotal"] = float(re.sub(r"[^\d.]", "", subtotal_match.group(2)))
+            result["subtotal"] = float(subtotal_match.group(1).replace(",", ""))
         except Exception:
             pass
 
     # Extract tax
-    tax_patterns = [
-        r"(tax|vat|gst)[^\d]*([$₹€£\d\.,]+)",
-        r"(tax\s*amount|vat\s*amount)[^\d]*([$₹€£\d\.,]+)"
-    ]
-    for pattern in tax_patterns:
-        tax_match = re.search(pattern, text, re.IGNORECASE)
-        if tax_match:
-            try:
-                result["tax"] = float(re.sub(r"[^\d.]", "", tax_match.group(2)))
-                break
-            except Exception:
-                continue
+    tax_match = re.search(r"tax[^\d]*([\d\.,]+)", text, re.IGNORECASE)
+    if tax_match:
+        try:
+            result["tax"] = float(tax_match.group(1).replace(",", ""))
+        except Exception:
+            pass
 
     # Parse items
     result["items"] = parse_items_from_text(text)
     
-    log("Regex extraction complete:", {
-        "doc_type": result["doc_type"],
-        "id": result["id"],
-        "vendor": result["vendor"],
-        "total": result["total"],
-        "items_count": len(result["items"])
-    })
+    log(f"Regex extraction complete - Found {len(result['items'])} items")
     
     return result
 
@@ -522,13 +529,6 @@ def extract_with_regex(text: str, doc_type: str = None) -> dict:
 def extract_structured_fields(text: str, doc_type_hint: str = None) -> dict:
     """
     Main extraction function - tries Mistral first, falls back to regex
-    
-    Args:
-        text: OCR extracted text
-        doc_type_hint: Optional hint about document type ('invoice', 'po')
-    
-    Returns:
-        Dictionary with structured document data
     """
     log("Starting structured field extraction")
     log(f"Text length: {len(text)} characters")
@@ -542,58 +542,21 @@ def extract_structured_fields(text: str, doc_type_hint: str = None) -> dict:
     # Get Mistral API key
     api_key = os.getenv("MISTRAL_API_KEY") or getattr(settings, "MISTRAL_API_KEY", None)
 
-    # Try Mistral extraction first
+    # Try Mistral extraction
     if api_key and api_key.strip():
-        log("Mistral API key found, attempting AI extraction")
+        log("Attempting Mistral AI extraction")
         mistral_data = run_mistral_extraction(text, api_key, doc_type_hint=doc_type)
         
-        # Check if Mistral extraction was successful
+        # Check if successful
         if (mistral_data.get("extraction_method") == "mistral" and 
-            (mistral_data.get("total") is not None or 
-             mistral_data.get("vendor") or 
-             len(mistral_data.get("items", [])) > 0)):
-            
-            log("Mistral extraction successful, using AI results")
-            
-            # Override doc_type if Mistral determined it
-            if mistral_data.get("doc_type") and mistral_data["doc_type"] != "unknown":
-                doc_type = mistral_data["doc_type"]
-            
-            return {
-                "doc_type": doc_type,
-                "id": mistral_data.get("id") or mistral_data.get("invoice_number") or mistral_data.get("po_number"),
-                "vendor": mistral_data.get("vendor"),
-                "currency": mistral_data.get("currency"),
-                "date": mistral_data.get("date") or mistral_data.get("invoice_date") or mistral_data.get("order_date"),
-                "items": mistral_data.get("items", []),
-                "subtotal": mistral_data.get("subtotal"),
-                "tax": mistral_data.get("tax"),
-                "total": mistral_data.get("total"),
-                "raw_text": text[:1000],
-                "extraction_method": "mistral",
-                "po_number": mistral_data.get("po_number"),  # For invoices referencing POs
-                "requested_by": mistral_data.get("requested_by"),  # For POs
-                "buyer": mistral_data.get("buyer"),  # For POs
-            }
+            (mistral_data.get("total") is not None or len(mistral_data.get("items", [])) > 0)):
+            log("✓ Mistral extraction successful")
+            return mistral_data
         else:
-            log(f"Mistral extraction failed or incomplete: {mistral_data.get('extraction_method')}")
+            log(f"✗ Mistral extraction incomplete: {mistral_data.get('extraction_method')}")
     else:
-        log("No Mistral API key found, skipping AI extraction")
+        log("No Mistral API key - skipping AI extraction")
 
-    # Fallback to regex extraction
-    log("Using regex fallback extraction")
+    # Fallback to regex
+    log("Using regex fallback")
     return extract_with_regex(text, doc_type)
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -62,7 +62,7 @@ def pretty_json_html(value):
         else:
             preview = pretty
         return format_html(
-            "<pre style='max-height:300px;overflow:auto;padding:8px;background:#f8f9fa;border-radius:6px;'>{}</pre>",
+            "<pre style='max-height:300px;overflow:auto;padding:8px;border-radius:6px;'>{}</pre>",
             preview,
         )
     except Exception:
