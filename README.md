@@ -102,7 +102,7 @@ The **Invoice-PO Matcher** streamlines the verification process between **Purcha
 
 📘 **API Documentation & Testing:**  
 Implemented using **Swagger UI** for interactive API exploration and testing.  
-Access Swagger docs here → [https://invoice-po-matcher.onrender.com/swagger/](https://invoice-po-matcher.onrender.com/swagger/)  
+Access Swagger docs here → [API Docs](https://invoice-po-matcher.onrender.com/swagger/)  
 
 ### Upload APIs
 | Endpoint                                  | Method | Description                        |
@@ -148,12 +148,12 @@ Access Swagger docs here → [https://invoice-po-matcher.onrender.com/swagger/](
 - **Database:** Supabase (PostgreSQL)
 
 **Admin Panel:**  
-- URL:[Admin Panel for DB Level](https://invoice-po-matcher.onrender.com/admin/)
+- URL: [Admin Panel for DB Level](https://invoice-po-matcher.onrender.com/admin/)
 - Username: `admin`  
 - Password: `admin`
 
 - **Swagger API Docs:**  
-- URL → [https://invoice-po-matcher.onrender.com/swagger/](https://invoice-po-matcher.onrender.com/swagger/)
+- URL → [Swagger Docs](https://invoice-po-matcher.onrender.com/swagger/)
 
 ---
 ## 🏃 **How to Run Locally**
