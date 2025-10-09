@@ -148,7 +148,7 @@ Access Swagger docs here → [https://invoice-po-matcher.onrender.com/swagger/](
 - **Database:** Supabase (PostgreSQL)
 
 **Admin Panel:**  
-- URL:[http://127.0.0.1:8000/admin/](http://127.0.0.1:8000/admin/)
+- URL:[Admin Panel for DB Level](https://invoice-po-matcher.onrender.com/admin/)
 - Username: `admin`  
 - Password: `admin`
 
