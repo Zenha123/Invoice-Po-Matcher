@@ -11,7 +11,7 @@ The **Invoice-PO Matcher** streamlines the verification process between **Purcha
 
 **Key Features:**
 
-- 📄 Upload POs and multiple invoices (PDF)  
+- 📄 Upload POs and multiple invoices (.pdf,.png,.jpg,.jpeg)  
 - 🔄 Supports multiple invoices per PO with full comparison  
 - 🧠 Automated data extraction using **Tesseract OCR**  
 - 🤖 Intelligent data structuring using **Mistral AI**  
@@ -43,7 +43,7 @@ The **Invoice-PO Matcher** streamlines the verification process between **Purcha
 - Multiple invoices can be linked to a single PO  
 
 ### 2️⃣ OCR & Extraction
-- **Tesseract OCR** extracts text from PDFs   
+- **Tesseract OCR** extracts text from .pdf,.png,.jpg,.jpeg   
 - Extracted text is sent to **Mistral AI**, which parses it into **structured JSON** including:  
   - Vendor name  
   - PO/Invoice number  
@@ -154,6 +154,9 @@ Access Swagger docs here → [API Docs](https://invoice-po-matcher.onrender.com/
 
 - **Swagger API Docs:**  
 - URL → [Swagger Docs](https://invoice-po-matcher.onrender.com/swagger/)
+
+🎥 **Project Demo:** [Watch Video on Google Drive](https://drive.google.com/file/d/11k4MpW0Ni9rXjMXIMK20EOuOWNuNuStc/view?usp=drivesdk)
+
 
 ---
 ## 🏃 **How to Run Locally**
